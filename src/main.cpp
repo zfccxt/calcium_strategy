@@ -6,7 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 int main() {
-  auto context = cl::CreateContext(cl::Backend::kOpenGL);
+  auto context = cl::CreateContext(cl::Backend::kVulkan);
 
   cl::WindowCreateInfo window_info;
   auto window = context->CreateWindow(window_info);
@@ -14,7 +14,9 @@ int main() {
   auto earth_shader = context->CreateShader("res/shaders/earth.vert.spv", "res/shaders/earth.frag.spv");
   auto earth_model = context->CreateMesh("res/models/earth/Earth.obj");
   auto earth_texture = context->CreateTexture("res/models/earth/Diffuse_2K.png");
-  earth_shader->BindTexture(1, earth_texture);
+  earth_shader->BindTexture(2, earth_texture);
+  auto night_texture = context->CreateTexture("res/models/earth/Night_lights_2K.png");
+  earth_shader->BindTexture(3, night_texture);
 
   glm::mat4 projection = glm::perspective(glm::radians(45.0f), window->GetAspectRatio(), 0.1f, 1000.0f);
   glm::vec3 position = glm::vec3(0, 0, -10.0f);
@@ -33,6 +35,8 @@ int main() {
     }
   });
 
+  glm::mat4 model_matrix = glm::mat4(1);
+
   while (window->IsOpen()) {
     window->PollEvents();
 
@@ -47,6 +51,9 @@ int main() {
       * glm::rotate(glm::mat4(1), rotation.y, glm::vec3(1, 0, 0))
       * glm::rotate(glm::mat4(1), rotation.x, glm::vec3(0, 1, 0));
     earth_shader->UploadUniform(0, glm::value_ptr(viewproj));
+
+    model_matrix = glm::rotate(model_matrix, 0.003f, glm::vec3(0, 1, 0));
+    earth_shader->UploadUniform(1, glm::value_ptr(model_matrix));
 
     context->BeginRenderPass(earth_shader);
     earth_model->Draw();
