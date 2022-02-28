@@ -7,7 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 int main() {
-  auto context = cl::CreateContext(cl::Backend::kVulkan);
+  auto context = cl::CreateContext(cl::Backend::kOpenGL);
 
   cl::WindowCreateInfo window_info;
   auto window = context->CreateWindow(window_info);
@@ -19,7 +19,11 @@ int main() {
   earth_shader->BindTexture("u_diffuse_texture", earth_texture);
   earth_shader->BindTexture("u_night_texture", night_texture);
 
-  glm::mat4 projection = glm::perspective(glm::radians(45.0f), window->GetAspectRatio(), 0.1f, 1000.0f);
+  glm::mat4 projection = glm::mat4(1);
+  auto calc_proj = [&](){ projection = glm::perspective(glm::radians(45.0f), window->GetAspectRatio(), 0.1f, 1000.0f); };
+  window->SetResizeCallback(calc_proj);
+  calc_proj();
+
   glm::vec3 position = glm::vec3(0, 0, -10.0f);
   glm::vec3 pos_momentum = glm::vec3(0, 0, 0);
   glm::vec3 rotation = glm::vec3(0, 0, 0);
