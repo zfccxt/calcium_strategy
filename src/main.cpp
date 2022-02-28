@@ -15,9 +15,9 @@ int main() {
   auto earth_shader = context->CreateShader("res/shaders/earth.vert.spv", "res/shaders/earth.frag.spv");
   auto earth_model = context->CreateMesh("res/models/earth/Earth.obj");
   auto earth_texture = context->CreateTexture("res/models/earth/Diffuse_2K.png");
-  earth_shader->BindTexture(2, earth_texture);
   auto night_texture = context->CreateTexture("res/models/earth/Night_lights_2K.png");
-  earth_shader->BindTexture(3, night_texture);
+  earth_shader->BindTexture("u_diffuse_texture", earth_texture);
+  earth_shader->BindTexture("u_night_texture", night_texture);
 
   glm::mat4 projection = glm::perspective(glm::radians(45.0f), window->GetAspectRatio(), 0.1f, 1000.0f);
   glm::vec3 position = glm::vec3(0, 0, -10.0f);
