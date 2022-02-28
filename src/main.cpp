@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <chrono>
 
 #include <calcium.hpp>
 #include <glm/glm.hpp>
@@ -37,6 +38,7 @@ int main() {
 
   glm::mat4 model_matrix = glm::mat4(1);
 
+  auto start_time = std::chrono::system_clock::now();
   while (window->IsOpen()) {
     window->PollEvents();
 
@@ -52,7 +54,9 @@ int main() {
       * glm::rotate(glm::mat4(1), rotation.x, glm::vec3(0, 1, 0));
     earth_shader->UploadUniform(0, glm::value_ptr(viewproj));
 
-    model_matrix = glm::rotate(model_matrix, 0.003f, glm::vec3(0, 1, 0));
+    auto current_time = std::chrono::system_clock::now();
+    float time = std::chrono::duration<float, std::chrono::seconds::period>(current_time - start_time).count();
+    model_matrix = glm::rotate(glm::mat4(1), time * 0.2f, glm::vec3(0, 1, 0));
     earth_shader->UploadUniform(1, glm::value_ptr(model_matrix));
 
     context->BeginRenderPass(earth_shader);

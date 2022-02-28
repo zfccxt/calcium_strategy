@@ -10,6 +10,6 @@ layout (binding = 3) uniform sampler2D u_night_texture;
 
 void main() {
   const vec3 sun_dir = normalize(vec3(0, -0.2, 1));
-  float darkness = dot(v_norm, sun_dir);
-  o_colour = mix(texture(u_night_texture, v_tex), texture(u_diffuse_texture, v_tex), darkness);
+  float lightness = dot(v_norm, sun_dir);
+  o_colour = mix(texture(u_night_texture, v_tex), texture(u_diffuse_texture, v_tex), lightness);
 }
