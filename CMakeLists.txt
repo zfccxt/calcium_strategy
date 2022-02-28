@@ -1,0 +1,43 @@
+cmake_minimum_required(VERSION 3.21)
+project(strategy)
+
+set(SOURCE_FILES src/main.cpp)
+source_group("src" FILES ${SOURCE_FILES})
+
+set(SHADER_FILES src/shaders/earth.vert.glsl src/shaders/earth.frag.glsl)
+source_group("src/shaders" FILES ${SHADER_FILES})
+
+add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${SHADER_FILES})
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
+
+add_subdirectory(depend/calcium)
+target_link_libraries(${PROJECT_NAME} PRIVATE calcium)
+
+target_include_directories(${PROJECT_NAME} PRIVATE src)
+
+if(APPLE)
+  set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_GENERATE_SCHEME TRUE XCODE_SCHEME_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
+if(WIN32)
+  set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
+  set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
+
+
+# Add custom target - compile glsl shaders to spirv
+set(GLSLANG_VALIDATOR "glslangValidator")
+file(GLOB_RECURSE GLSL_SOURCE_FILES "src/shaders/*.glsl")
+foreach(GLSL_FILE ${GLSL_SOURCE_FILES})
+  get_filename_component(FILE_NAME ${GLSL_FILE} NAME)
+  string(REGEX REPLACE "[.]glsl$" ".spv" SPIRV_FILE_NAME ${FILE_NAME})
+  set(SPIRV_FILE "${CMAKE_CURRENT_SOURCE_DIR}/res/shaders/${SPIRV_FILE_NAME}")
+  add_custom_command(
+    OUTPUT ${SPIRV_FILE}
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_SOURCE_DIR}/res/shaders/"
+    COMMAND ${GLSLANG_VALIDATOR} -V ${GLSL_FILE} -o ${SPIRV_FILE}
+    DEPENDS ${GLSL_FILE})
+  list(APPEND SPIRV_BINARY_FILES ${SPIRV_FILE})
+endforeach(GLSL_FILE)
+add_custom_target(calcium_cubes_shader_target DEPENDS ${SPIRV_BINARY_FILES})
+add_dependencies(${PROJECT_NAME} calcium_cubes_shader_target)
+
