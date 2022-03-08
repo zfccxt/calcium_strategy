@@ -7,7 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 int main() {
-  auto context = cl::CreateContext(cl::Backend::kVulkan);
+  auto context = cl::Context::CreateContext(cl::Backend::kVulkan);
 
   cl::WindowCreateInfo window_info;
   auto window = context->CreateWindow(window_info);
@@ -63,8 +63,9 @@ int main() {
     model_matrix = glm::rotate(glm::mat4(1), time * 0.2f, glm::vec3(0, 1, 0));
     earth_shader->UploadUniform(1, glm::value_ptr(model_matrix));
 
-    context->BeginRenderPass(earth_shader);
-    earth_model->Draw();
+    context->BeginRenderPass();
+      earth_shader->Bind();
+      earth_model->Draw();
     context->EndRenderPass();
   }
 }

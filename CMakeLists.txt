@@ -51,6 +51,6 @@ foreach(GLSL_FILE ${GLSL_SOURCE_FILES})
     DEPENDS ${GLSL_FILE})
   list(APPEND SPIRV_BINARY_FILES ${SPIRV_FILE})
 endforeach(GLSL_FILE)
-add_custom_target(calcium_cubes_shader_target DEPENDS ${SPIRV_BINARY_FILES})
-add_dependencies(${PROJECT_NAME} calcium_cubes_shader_target)
+add_custom_target(strategy_shader_target DEPENDS ${SPIRV_BINARY_FILES})
+add_dependencies(${PROJECT_NAME} strategy_shader_target)
 
