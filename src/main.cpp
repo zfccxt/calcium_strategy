@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <chrono>
+#include <iostream>
 
 #include <calcium.hpp>
 #include <glm/glm.hpp>
@@ -10,6 +11,7 @@ int main() {
   auto context = cl::Context::CreateContext(cl::Backend::kVulkan);
 
   cl::WindowCreateInfo window_info;
+  window_info.enable_vsync = false;
   auto window = context->CreateWindow(window_info);
 
   auto earth_shader = context->CreateShader("res/shaders/earth.vert.spv", "res/shaders/earth.frag.spv");
@@ -42,7 +44,11 @@ int main() {
 
   glm::mat4 model_matrix = glm::mat4(1);
 
-  auto start_time = std::chrono::system_clock::now();
+  uint64_t num_frames = 0;
+  auto start_time = std::chrono::high_resolution_clock::now();
+  float elapsed_seconds = 0.0f;
+  float total_seconds = 20.0f;
+
   while (window->IsOpen()) {
     window->PollEvents();
 
@@ -58,14 +64,25 @@ int main() {
       * glm::rotate(glm::mat4(1), rotation.x, glm::vec3(0, 1, 0));
     earth_shader->UploadUniform(0, glm::value_ptr(viewproj));
 
-    auto current_time = std::chrono::system_clock::now();
-    float time = std::chrono::duration<float, std::chrono::seconds::period>(current_time - start_time).count();
-    model_matrix = glm::rotate(glm::mat4(1), time * 0.2f, glm::vec3(0, 1, 0));
+    auto current_time = std::chrono::high_resolution_clock::now();
+    elapsed_seconds = std::chrono::duration<float, std::chrono::seconds::period>(current_time - start_time).count();
+    model_matrix = glm::rotate(glm::mat4(1), elapsed_seconds * 0.2f, glm::vec3(0, 1, 0));
     earth_shader->UploadUniform(1, glm::value_ptr(model_matrix));
 
-    context->BeginRenderPass();
+    context->BeginFrame();
       earth_shader->Bind();
       earth_model->Draw();
-    context->EndRenderPass();
+    context->EndFrame();
+
+    ++num_frames;
+    if (elapsed_seconds > total_seconds) {
+      window->Close();
+    }
   }
+
+  std::cout << "       Elapsed time: " << elapsed_seconds << " seconds" << "\n";
+  std::cout << "Num frames rendered: " << num_frames << "\n";
+  float framerate = (float)num_frames / elapsed_seconds;
+  std::cout << "      Avg framerate: " << framerate << " fps" << "\n";
+  std::cin.get();
 }
